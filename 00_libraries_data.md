@@ -163,7 +163,7 @@ Ahora corremos `fastqc`
 fastqc ~/data/raw/fastq/*.fastq.gz -o ~/results/2.fastqc/
 ```
 Al terminar debería de aparecer los siguiente archivos en la carpeta `results/2.fastqc/`
-
+```
 ├── results
    └── 2.fastqc
        ├── CH1S_1_fastqc.html
@@ -262,7 +262,7 @@ Al terminar debería de aparecer los siguiente archivos en la carpeta `results/2
        ├── XP3Y_1_fastqc.zip
        ├── XP3Y_2_fastqc.html
        └── XP3Y_2_fastqc.zip
-
+```
 Al verificar que esten todos los `.html` y `.zip` ahora se puede correr un `multiqc`
 ``` bash
 cd ~/results/2.fastqc
