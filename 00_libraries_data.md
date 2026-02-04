@@ -284,10 +284,17 @@ Te dará como resultado
            multiqc | MultiQC complete
 ```
 
+Verifica que estén los archivos `multiqc_data` y `multiqc_report.html` correctamente:
+
+```bash
+ ls | grep multiqc
+```
+
 Posteriormente descarga los resultados del multiqc en tu PC para poder visualizar con el siguiente comando desde tu power shell:
 
+```bash
 scp brendadh@123.456.78.91:/home/brendadh/results/2.fastqc/multiqc_report.html .
-
+```
 
 
 
