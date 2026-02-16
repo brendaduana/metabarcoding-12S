@@ -333,151 +333,132 @@ Posteriormente descarga los resultados del multiqc en tu PC para poder visualiza
 ```bash
 scp alumno@123.456.78.91:/home/alumno/results/2.fastqc/multiqc_report.html .
 ```
+Ahora utilizaremos DADA2 a través de QIIME2
 
+QIIME2 necesita un manifest `.tsv` en donde se indique:
+* Que archivo corresponde a que muestra
+* Cual es la muestra forward (_1) y reverse (_2)
+
+1. Crea directorios de salida
+
+```bash
+mkdir -p results/03.qiime2/{01.import,02.demux}
+```
+
+2. Activa el ambiente
+
+En caso de no entrar donde está alojado el ambiente escribe en tu terminal: `which` + el ambiente a identificar, en este caso es `conda`
+
+```bash
+which conda
+```
+
+Y dará la ruta la ruta donde se encuentra `alojado:/data/bin/miniconda3/bin/conda`
+
+Llama al ambiente con `source` o con `.`. seguido de la ruta:
+
+```bash
+source /data/bin/miniconda3/etc/profile.d/conda.sh
+```
+
+Y activalo:
+
+```bash
+conda activate qiime2-amplicon-2024.10
+```
+
+3. Crea el manifest desde la raíz
+
+```bash
+echo -e "sample-id\tforward-absolute-filepath\treverse-absolute-filepath" > data/manifest_qiime2.tsv
+```
+
+```bash
+for f in data/raw/fastq/*_1.fastq.gz; do
+  sample=$(basename "$f" _1.fastq.gz)
+  echo -e "${sample}\t$(pwd)/data/raw/fastq/${sample}_1.fastq.gz\t$(pwd)/data/raw/fastq/${sample}_2.fastq.gz"
+done >> data/manifest_qiime2.tsv
+```
+
+4. Verifica que se haya creado con un head:
+
+```bash
+head data/metadata/manifest_qiime2.tsv
+```
+
+5. Importa a QIIME2 (paired-end): generando un script con ayuda de nano
+
+```bash
+nano scripts/01_import_demux.sh
+```
+
+```bash
+#!/usr/bin/env bash
+set -euo pipefail
+#importa FASTQ
+qiime tools import \
+  --type 'SampleData[PairedEndSequencesWithQuality]' \
+  --input-path data/manifest_qiime2.tsv \
+  --output-path results/03.qiime2/01.import/demux-paired-end.qza \
+  --input-format PairedEndFastqManifestPhred33V2
+#genera resumen de calidad
+qiime demux summarize \
+  --i-data results/03.qiime2/01.import/demux-paired-end.qza \
+  --o-visualization results/03.qiime2/02.demux/demux.qzv
+```
+
+`Ctrl + O`, después `Enter` y sal con `Ctrl + X`
+
+6. Se hace ejecutable:
+
+```bash
+chmod +x scripts/01_import_demux.sh
+```
+
+7. Ejecutar:
+
+```bash
+bash scripts/01_import_demux.sh
+```
 ##hasta aqui no estoy segura##
 ```bash
 ```
-Se crea un directorio para hacer el trimming: 
 
-nano code_for_loop_allsamples:
-##hasta aqui no estoy segura##
+data/
 
-Ahora dentro de R utilizaremos plotQualityProfile con [DADA2](https://github.com/benjjneb/dada2):
-
-1. Generaremos el directorio donde se alojarán los resultados:
-
-```bash
-mkdir -p results/03.dada2
-```
-
-2. Crearemos un nano `plotQualityProfile` que contendrá el script:
-
-```bash
-nano scripts/01_plot_quality_batches.R
-```
-
-
-```r
-# Plot Quality Profiles by Batches
-
-# Cargar librería
-library(dada2)
-
-# Ruta a los FASTQ
-path <- "data/raw/fastq"
-
-# Listar archivos forward y reverse
-fnFs <- sort(list.files(path, pattern = "_1.fastq.gz", full.names = TRUE))
-fnRs <- sort(list.files(path, pattern = "_2.fastq.gz", full.names = TRUE))
-
-# Crear carpeta de salida
-output_dir <- "results/03.dada2/quality_batches"
-dir.create(output_dir, recursive = TRUE, showWarnings = FALSE)
-
-# Tamaño del lote (puedes cambiar 6 por otro número si quieres)
-batch_size <- 6
-
-# Número total de muestras
-n <- length(fnFs)
-
-# Secuencia de inicio de lotes
-starts <- seq(1, n, by = batch_size)
-
-# Loop por lotes
-for (s in starts) {
-
-  e <- min(s + batch_size - 1, n)
-
-  message(sprintf("Procesando muestras %d a %d", s, e))
-
-  # Forward
-  pdf(file = sprintf("%s/R1_%02d-%02d.pdf", output_dir, s, e),
-      width = 12, height = 8)
-  plotQualityProfile(fnFs[s:e])
-  dev.off()
-
-  # Reverse
-  pdf(file = sprintf("%s/R2_%02d-%02d.pdf", output_dir, s, e),
-      width = 12, height = 8)
-  plotQualityProfile(fnRs[s:e])
-  dev.off()
-}
-
-message("Finalizado correctamente.")
-```
-
-3. Se ejecutará en background con el comando `nohup`:
-
-```bash
-
-nohup Rscript scripts/01_plot_quality_batches.R > results/03.dada2/plot_quality.log 2>&1 &
-
-```
-
-`Rscript`: ejecuta R sin modo interactivo
-
-`>`: guarda salida
-
-`2>&1`:guarda errores
-
-`&`:lo manda al fondo
-
-4. Para ver si está corriendo el scrip en el fondo:
-
-```bash
-ps aux | grep Rscript
-```
-
-5. Monitorea el progreso del scrip en el fondo con el siguiente comando:
-
-```bash
-tail -f results/03.dada2/plot_quality.log
-
-```
-Sal del monitoreo con `Ctrl + C`
-
-6. Confirma que se generarón PDFs:
-
-```bash
-ls results/03.dada2/quality_batches | head
-```
-
-7. Confirma cuantos PDFs se generarón :
-
-```bash
-ls results/03.dada2/quality_batches/*.pdf | wc -l
-```
-ls data/
 metadata  raw
-ls data/raw/
+
+data/raw/
+
 20260114_HN00264030_MAS_Report.zip  fastq  HN00264030_ARCHIVOS_RAW_FASTQ.zip
-ls data/raw/fastq/
+
+data/raw/fastq/
+
 CH1S_1.fastq.gz  CH1S_2.fastq.gz
-CH2Y_2.fastq.gz  
-KA1Y_1.fastq.gz  KA3S_2.fastq.gz  
-SA2S_1.fastq.gz  SA3Y_2.fastq.gz  
+CH2Y_1.fastq.gz  CH2Y_2.fastq.gz
+KA1Y_1.fastq.gz  KA1Y_2.fastq.gz
+SA2S_1.fastq.gz  SA2S_2.fastq.gz
+SA3Y_1.fastq.gz  SA3Y_2.fastq.gz
 XP2Y_1.fastq.gz  XP2Y_2.fastq.gz
-  CH3S_1.fastq.gz  
-KA1Y_2.fastq.gz  KA3Y_1.fastq.gz  
-SA2S_2.fastq.gz  XP1S_1.fastq.gz  
-CH1Y_1.fastq.gz  CH3S_2.fastq.gz  
-KA2S_1.fastq.gz  KA3Y_2.fastq.gz  
-SA2Y_1.fastq.gz  XP1S_2.fastq.gz  
+CH3S_1.fastq.gz  CH3S_2.fastq.gz
+KA1S_1.fastq.gz  KA1S_2.fastq.gz
+KA3Y_1.fastq.gz  KA3Y_2.fastq.gz
+KA3S_1.fastq.gz  KA3S_2.fastq.gz
+XP1S_1.fastq.gz  XP1S_2.fastq.gz
+CH1Y_1.fastq.gz  CH1Y_2.fastq.gz
+KA2S_1.fastq.gz  KA2S_2.fastq.gz
+SA2Y_1.fastq.gz  SA2Y_2.fastq.gz
 XP3S_1.fastq.gz  XP3S_2.fastq.gz
-CH1Y_2.fastq.gz  CH3Y_1.fastq.gz  
-KA2S_2.fastq.gz  SA1S_1.fastq.gz  
-SA2Y_2.fastq.gz  XP1Y_1.fastq.gz  
-CH2S_1.fastq.gz  CH3Y_2.fastq.gz  
-KA2Y_1.fastq.gz  SA1S_2.fastq.gz  
-SA3S_1.fastq.gz  XP1Y_2.fastq.gz  
-XP3Y_1.fastq.gz
-CH2S_2.fastq.gz  KA1S_1.fastq.gz  
-KA2Y_2.fastq.gz  SA1Y_1.fastq.gz  
-SA3S_2.fastq.gz  XP2S_1.fastq.gz  
-XP3Y_2.fastq.gz
-CH2Y_1.fastq.gz  KA1S_2.fastq.gz  
-KA3S_1.fastq.gz  SA1Y_2.fastq.gz  
-SA3Y_1.fastq.gz  XP2S_2.fastq.gz
+CH3Y_1.fastq.gz  CH3Y_2.fastq.gz
+SA1S_1.fastq.gz  SA1S_2.fastq.gz
+XP1Y_1.fastq.gz  XP1Y_2.fastq.gz
+CH2S_1.fastq.gz  CH2S_2.fastq.gz
+KA2Y_1.fastq.gz  KA2Y_2.fastq.gz
+SA3S_1.fastq.gz  SA3S_2.fastq.gz
+XP3Y_1.fastq.gz  XP3Y_2.fastq.gz
+SA1Y_1.fastq.gz  SA1Y_2.fastq.gz
+XP2S_1.fastq.gz  XP2S_2.fastq.gz  
+   
 
 ##LISTADO DE PAQUETES INSTALADOS EN EL SERVIDOR: 
 ```
@@ -525,26 +506,3 @@ vamb                     /data/env/vamb
 vibrant                  /data/env/vibrant
 virsorter2               /data/env/virsorter2
 ```
-
-PARA ENCONTRAR DONDE ESTAN ALOJADOS LOS PROGRAMAS SE ESCRIBE wich:
-which conda
-Y DA LO SIGUIENTE:
-/data/bin/miniconda3/bin/conda
-
-###esto sería en R
-Dentro de R se generarán gráficas de calidad (R1 y R2) con `plotQualityProfile`:
-
-```r
-path <- "data/raw/fastq"
-
-fnFs <- sort(list.files(path, pattern="_1.fastq.gz", full.names=TRUE))
-fnRs <- sort(list.files(path, pattern="_2.fastq.gz", full.names=TRUE))
-
-plotQualityProfile(fnFs[1:2])
-plotQualityProfile(fnRs[1:2])
-```
-
-
-
-
-
