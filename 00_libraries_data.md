@@ -1,19 +1,3 @@
-# Que comandos aprendimos:
-
-`scp` (secure copy): copia archivos de forma encriptada.
-
-`cd` (change directory): permite entrar o salir de carpetas.
-
-`cd ..`: regresa una carpeta atras.
-
-`ls ` (list): muestra que archivos hay dentro de la carpeta donde estás situado.
-
-`ls -lh`  `-l` ,(long), da detalles y, `-h` (human-readable) muestra el peso de los archivos en formato legible (KB, MB,GB).
-
-`~` (Home Directory): es un atajo para la ruta de tu usuario principal (ejemplo:*/home/alumno/*)
-
-`mkdir` (make directory): funciona para crear directorios y con el parámetro `-p` (parents) se crea directorios intermedios si no existen.
-
 ### Crea tus carpetas de trabajo
 
 Ingresa al servidor con tu usuario y contraseña:
