@@ -515,11 +515,15 @@ Una vez teniendo los *fastq demultiplexados* se puede comenzar el proceso.
 
 El resultado del pipeline es una tabla de características de ASV que contiene filas correspondientes a las muestras y columnas a las ASV en esa muestra.
 # Quitan adaptadores con cutadapt:
+```
 1. version: cutadapt --version 5.2
 2. ingresé a mi ruta: /mnt/c/Users/HP/OneDrive - Universidad Autónoma Metropolitana/Documentos/LandaLab/amplicones_paola/1.datoscrudo
 3. descomprime: unzip HN00264030_ARCHIVOS_RAW_FASTQ.zip
+
+```
 4. crea una carpeta: mkdir -p trimmed reports
 5. creé un nano: nano 01_remove_primers.sh
+```
 #!/bin/bash
 set -euo pipefail
 for f in *_1.fastq.gz; do
@@ -532,37 +536,81 @@ for f in *_1.fastq.gz; do
     "${s}_1.fastq.gz" "${s}_2.fastq.gz" \
     > "reports/cutadapt_${s}.log"
 done
-
-4. permitir ejecución: chmod +x 01_remove_primers.sh
-5. ejecutar donde estoy posisicionada./01_remove_primers.sh
-6. guarda los resultados en .txt: 1.datoscrudos$ grep "Done" cutadapt_*.log > cutadapt_summary.txt
+```
+primers a utilizar
+```
+16S V3–V4 (341F / 806R)
+```
+4. permitir ejecución:
+```
+chmod +x 01_remove_primers.sh
+```
+6. ejecutar donde estoy posisicionada
+```
+./01_remove_primers.sh
+```
+8. verifica que ya no esten con un zcat
+   zgrep -c "CCTACGGG" 01_cutadapt/*_1.fastq.gz
 
 ### Filtrar y recortar:filterAndTrim()
 Se necesitan conocer los nombres de las muestras, deben estar en formato gzip de forma nativa
 
 Se debe instalar dos programas: DADA2 y Phyloseq
 1. R
-2. En la consola puedes escribir:setwd("C:/Users/HP/OneDrive - Universidad Autónoma Metropolitana/Documentos/LandaLab/amplicones_paola/1.datoscrudos") 
-y confirma con: getwd()
-3. En tu script instala DADA2:
+2. En la consola puedes escribir:
+```setwd("C:/Users/HP/OneDrive - Universidad Autónoma Metropolitana/Documentos/LandaLab/amplicones_paola/1.datoscrudos") ```
+y confirma con:
+```getwd()```
+4. En un script instala DADA2:
+```
 if (!requireNamespace("BiocManager", quietly = TRUE))
 install.packages("BiocManager")
 BiocManager::install("dada2")
-4. i carga la libreria:
+```
+
+5. carga la libreria:
+```
 library(dada2)
-packageVersion("dada2")
+library(stats)
+library(ggplot2)
+```
+6. carga los datos:
+```
 path <- "01_trimmed"
 fnFs <- sort(list.files(path, pattern="_1.fastq.gz", full.names=TRUE))
 fnRs <- sort(list.files(path, pattern="_2.fastq.gz", full.names=TRUE))
-
+```
+7. verifica que esten los archivos:
+```
 length(fnFs)
 length(fnRs)
-
-plotQualityProfile(fnFs[1:3])
-plotQualityProfile(fnRs[1:3])
+```
+8. Ejecuta el plot en Forward
+```
+plotQualityProfile(fnFs[20])
+```
+9. Ejecuta el plot en Forward con una ventana mas cercana al final
+```
+plotQualityProfile(fnFs[20]) + coord_cartesian(xlim=c(270,300))
+```
+10. Ejecuta el plot en Reverse
+```
+plotQualityProfile(fnRs[20])
+```
+11. Ejecuta el plot en Reverse con una ventana mas cercana al final
+```
+plotQualityProfile(fnRs[20]) + coord_cartesian(xlim=c(270,300))
+```
+Basado en el perfil de calidad las lecturas en Reverse disminuye más en comparación con la lectura Forward.
+De acuerso con la calidad aproximada se cortará despues de la calidad Q26
+Para hacer el trucLen se debe de observar:
+ 1.Antes de que baje la calidad. La linea verde comienza a decaer
+ 2.Antesde que caiga el porcentaje de lecturas. La linea roja se desploma.
+Basado en los plots de calidad el F se recortará en 240 y el Reverse en 200
 
 
 ###datitos extra de diccionario
+```
 set - e: si ocurre cualquier error, el script se detiene inmediatamente
 set -u:si usas una variable que no existe, el script falla
 -o pipefail: detenerse si algo falla, no permitir variables no definidas, detectar errores dentro de pipes
