@@ -407,7 +407,7 @@ bash scripts/01_import_demux.sh
 ##hasta aqui no estoy segura##
 ```bash
 ```
-
+```
 data/
 
 metadata  raw
@@ -442,7 +442,7 @@ SA3S_1.fastq.gz  SA3S_2.fastq.gz
 XP3Y_1.fastq.gz  XP3Y_2.fastq.gz
 SA1Y_1.fastq.gz  SA1Y_2.fastq.gz
 XP2S_1.fastq.gz  XP2S_2.fastq.gz  
-   
+``` 
 
 ##LISTADO DE PAQUETES INSTALADOS EN EL SERVIDOR: 
 ```
@@ -490,3 +490,79 @@ vamb                     /data/env/vamb
 vibrant                  /data/env/vibrant
 virsorter2               /data/env/virsorter2
 ```
+03/03/26
+https://benjjneb.github.io/dada2/ 
+https://www.bioconductor.org/packages//release/bioc/vignettes/dada2/inst/doc/dada2-intro.html
+https://www.nature.com/articles/nmeth.3869
+
+### Introducción
+El conocimiento de los microbiomas han sido develadas por el desarrollo de la secuenciación de amplicones. 
+Un locus especifico como el gen RNAr 16S en bacterias se amplifica a partir de DNA extraído, eliminando la necesidad de cultivar microbios para detectar su presencia
+y proporciona un censo exhaustivo de una comunidad de forma rentable.
+
+Sin embargo, el proceso de secuenciación de amplicones introduce errores lo que dificulta la interpretación de los resultados.
+DADA2 implementa un algoritmo que modela los errores introducidos durante la secuenciación de amplicones
+ y utiliza dicho modelo para inferir la verdadera composición de la muestra.
+ Reemplaza el paso de OTU, generando en su lugar tablas de mayor resolucion de ASVs.
+ 
+### DADA2
+
+Punto de partida: espera que haya un archivo un conjunto de archivos *fastq demultiplexados* para cada muestra
+(o dos archivos fastq, un forward y otro reverse para cada muestra). El *demultiplexados* puede hacerse con QIIME
+
+DADA2 espera que no haya bases no biológicas, por ejemplo los cebadores de PCR que se incluyeron en la región del amplicón.
+Una vez teniendo los *fastq demultiplexados* se puede comenzar el proceso.
+
+El resultado del pipeline es una tabla de características de ASV que contiene filas correspondientes a las muestras y columnas a las ASV en esa muestra.
+# Quitan adaptadores con cutadapt:
+1. version: cutadapt --version 5.2
+2. ingresé a mi ruta: /mnt/c/Users/HP/OneDrive - Universidad Autónoma Metropolitana/Documentos/LandaLab/amplicones_paola/1.datoscrudo
+3. descomprime: unzip HN00264030_ARCHIVOS_RAW_FASTQ.zip
+4. crea una carpeta: mkdir -p trimmed reports
+5. creé un nano: nano 01_remove_primers.sh
+#!/bin/bash
+set -euo pipefail
+for f in *_1.fastq.gz; do
+  s="${f%_1.fastq.gz}"
+  cutadapt \
+    -g CCTACGGGNGGCWGCAG \
+    -G GACTACHVGGGTATCTAATCC \
+    -o "trimmed/${s}_1.fastq.gz" \
+    -p "trimmed/${s}_2.fastq.gz" \
+    "${s}_1.fastq.gz" "${s}_2.fastq.gz" \
+    > "reports/cutadapt_${s}.log"
+done
+
+4. permitir ejecución: chmod +x 01_remove_primers.sh
+5. ejecutar donde estoy posisicionada./01_remove_primers.sh
+6. guarda los resultados en .txt: 1.datoscrudos$ grep "Done" cutadapt_*.log > cutadapt_summary.txt
+
+### Filtrar y recortar:filterAndTrim()
+Se necesitan conocer los nombres de las muestras, deben estar en formato gzip de forma nativa
+
+Se debe instalar dos programas: DADA2 y Phyloseq
+1. R
+2. En la consola puedes escribir:setwd("C:/Users/HP/OneDrive - Universidad Autónoma Metropolitana/Documentos/LandaLab/amplicones_paola/1.datoscrudos") 
+y confirma con: getwd()
+3. En tu script instala DADA2:
+if (!requireNamespace("BiocManager", quietly = TRUE))
+install.packages("BiocManager")
+BiocManager::install("dada2")
+4. i carga la libreria:
+library(dada2)
+packageVersion("dada2")
+path <- "01_trimmed"
+fnFs <- sort(list.files(path, pattern="_1.fastq.gz", full.names=TRUE))
+fnRs <- sort(list.files(path, pattern="_2.fastq.gz", full.names=TRUE))
+
+length(fnFs)
+length(fnRs)
+
+plotQualityProfile(fnFs[1:3])
+plotQualityProfile(fnRs[1:3])
+
+
+###datitos extra de diccionario
+set - e: si ocurre cualquier error, el script se detiene inmediatamente
+set -u:si usas una variable que no existe, el script falla
+-o pipefail: detenerse si algo falla, no permitir variables no definidas, detectar errores dentro de pipes
