@@ -155,9 +155,9 @@ Hasta este punto tendrás lo siguiente:
 
 Lo que se ha realizado:
 
-1. Creación de directorios de trabajo en el servidor.
-2. Carga del archivo original de secuenciación `.zip` desde la PC al servidor.
-3. Acceso correcto al servidor LandaLab.
+1. Acceso correcto al servidor LandaLab.
+2. Creación de directorios de trabajo en el servidor.
+3. Carga del archivo original de secuenciación `.zip` desde la PC al servidor.
 4. Identificación de lecturas paired-end en el archivo ZIP.
 5. Creación de una bitácora en formato `.txt`.
 
@@ -337,7 +337,7 @@ En caso de no entrar donde está alojado el ambiente escribe en tu terminal: `wh
 which conda
 ```
 
-Y dará la ruta la ruta donde se encuentra `alojado:/data/bin/miniconda3/bin/conda`
+Y dará la ruta la ruta donde se encuentra alojado:`/data/bin/miniconda3/bin/conda`
 
 Llama al ambiente con `source` o con `.`. seguido de la ruta:
 
@@ -404,6 +404,7 @@ chmod +x scripts/01_import_demux.sh
 ```bash
 bash scripts/01_import_demux.sh
 ```
+
 ##hasta aqui no estoy segura##
 ```bash
 ```
@@ -491,7 +492,7 @@ vibrant                  /data/env/vibrant
 virsorter2               /data/env/virsorter2
 ```
 03/03/26
-https://benjjneb.github.io/dada2/ 
+https://benjjneb.github.io/dada2/ . https://benjjneb.github.io/dada2/tutorial.html 
 https://www.bioconductor.org/packages//release/bioc/vignettes/dada2/inst/doc/dada2-intro.html
 https://www.nature.com/articles/nmeth.3869
 
@@ -606,8 +607,32 @@ De acuerso con la calidad aproximada se cortará despues de la calidad Q26
 Para hacer el trucLen se debe de observar:
  1.Antes de que baje la calidad. La linea verde comienza a decaer
  2.Antesde que caiga el porcentaje de lecturas. La linea roja se desploma.
-Basado en los plots de calidad el F se recortará en 240 y el Reverse en 200
+Basado en los plots de calidad el F se recortará en 280 y el Reverse en 275
+```
+out <- filterAndTrim(
+  fnFs, filtFs,
+  fnRs, filtRs,
+  truncLen=c(280,275),
+  trimLeft=c(0,0),      
+  maxN=0,
+  maxEE=c(2,2),
+  truncQ=2,
+  rm.phix=TRUE,
+  compress=TRUE,
+  verbose=TRUE,
+  multithread=FALSE
+)
+```
+```
+out
+```
+```
+write.csv(out, file.path(filt_data, "filtering_summary.csv"))
+```
 
+Ahora se calcula el error
+errF <- learnErrors(filtFs, multithread=FALSE)
+errR <- learnErrors(filtRs, multithread=FALSE)
 
 ###datitos extra de diccionario
 ```
