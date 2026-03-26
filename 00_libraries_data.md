@@ -555,6 +555,118 @@ for f in *_1.fastq.gz; do
     > "reports/cutadapt_${s}.log"
 done
 ```
+### ESTE FUE EL CÓDIGO UTILIZADO PARA EUK MBC
+```
+#!/usr/bin/env bash
+set -euo pipefail
+
+# Recorte de primers paired-end con cutadapt
+
+# Configuración de rutas
+# Define las rutas principales del proyecto: dónde están los datos originales, dónde se guardarán los resultados y los reportes.
+# Crea las carpetas de salida y reportes si no existen.
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+PROJECT_ROOT="$(cd "${SCRIPT_DIR}/.." && pwd)"
+RAW_DIR="${PROJECT_ROOT}/raw_fastqs"
+OUT_DIR="${PROJECT_ROOT}/for_dada2"
+REPORT_DIR="${PROJECT_ROOT}/cutadapt_reports"
+mkdir -p "${OUT_DIR}" "${REPORT_DIR}"
+
+# Prepara las secuencias de los primers que cutadapt usará para recortar los extremos correctos de las lecturas
+# Primers (override con FWD=... REV=...)
+# Define los primers forward y reverse (pueden ser cambiados al ejecutar el script).
+# Calcula la reversa complementaria del reverse primer.
+# Prepara la secuencia que se buscará en las lecturas R2.
+FWD="${FWD:-ACACCGCCCGTCACTCT}"
+REV="${REV:-CTTCCGGTACACTTACCATG}"
+revcomp(){ echo "$1" | tr 'ACGTacgt' 'TGCAtgca' | rev; }
+RC="$(revcomp "${REV}")"
+ADAPTER_R2="${REV}"   # R2 comienza con REV (no RC)
+
+# Parámetros (override con THREADS= MIN_LEN= ERROR_RATE= DISCARD_UNTRIMMED=0/1)
+# Permite ajustar el número de hilos, el error permitido, la longitud mínima de las lecturas y si se descartan lecturas sin recortar.
+THREADS="${THREADS:-4}"
+ERROR_RATE="${ERROR_RATE:-0.10}"
+MIN_LEN="${MIN_LEN:-40}"
+DISCARD_UNTRIMMED="${DISCARD_UNTRIMMED:-0}"
+
+# Localizar cutadapt
+# Verifica si cutadapt está instalado y accesible, ya sea como comando directo o a través de Python.
+# Si no se encuentra, el script termina con un error.
+if command -v cutadapt >/dev/null 2>&1; then
+  CUTADAPT_BIN="cutadapt"
+elif python3 -m cutadapt --version >/dev/null 2>&1; then
+  CUTADAPT_BIN="python3 -m cutadapt"
+else
+  echo "ERROR: cutadapt no encontrado"; exit 1
+fi
+
+# Verificaciones previas
+# Asegura que el directorio de datos originales existe y contiene archivos FASTQ esperados
+[[ -d "${RAW_DIR}" ]] || { echo "ERROR: falta ${RAW_DIR}"; exit 1; }
+shopt -s nullglob
+R1_LIST=( "${RAW_DIR}"/*_R1_001.fastq )
+(( ${#R1_LIST[@]} > 0 )) || { echo "ERROR: no hay *_R1_001.fastq"; exit 1; }
+
+# Preparar archivos de resumen
+# Inicializa archivos para almacenar resúmenes detallados y tabulares de los resultados del recorte.
+SUMMARY_TXT="${REPORT_DIR}/overall_report.txt"
+SUMMARY_TSV="${REPORT_DIR}/overall_summary.tsv"
+: > "${SUMMARY_TXT}"
+echo -e "sample\tpairs_total\tread1_adapter\tread2_adapter\tpairs_written\tpct_written" > "${SUMMARY_TSV}"
+
+echo "[INFO] FWD=${FWD} REV=${REV} RC=${RC} THREADS=${THREADS} MIN_LEN=${MIN_LEN} DISCARD_UNTRIMMED=${DISCARD_UNTRIMMED}"
+
+# Procesar cada par de FASTQ
+# Itera sobre cada archivo R1, encuentra su par R2, y ejecuta cutadapt con los parámetros especificados.
+# Genera reportes individuales y actualiza los resúmenes generales.
+
+for R1 in "${R1_LIST[@]}"; do
+  base_R1="$(basename "${R1}")"
+  R2="${R1/_R1_001.fastq/_R2_001.fastq}"
+  [[ -f "${R2}" ]] || { echo "[WARN] Falta par R2 para ${base_R1}, omite"; continue; }
+  sample="${base_R1/_R1_001.fastq/}"
+
+  out_R1="${OUT_DIR}/${base_R1}"
+  out_R2="${OUT_DIR}/$(basename "${R2}")"
+  report="${REPORT_DIR}/${sample}_cutadapt.txt"
+
+  # Construir argumentos (seguro con set -u)
+  args=( -j "${THREADS}" -g "^${FWD}...${RC}" -G "^${ADAPTER_R2}...$(revcomp "${FWD}")" -e "${ERROR_RATE}" -m "${MIN_LEN}" --discard-untrimmed )
+  if [[ "${DISCARD_UNTRIMMED}" == "1" ]]; then
+    args+=( --discard-untrimmed )
+  fi
+  args+=( -o "${out_R1}" -p "${out_R2}" "${R1}" "${R2}" )
+
+  echo "[INFO] Procesando ${sample}"
+  "${CUTADAPT_BIN}" "${args[@]}" > "${report}"
+
+  {
+    echo "=== ${sample} ==="
+    grep -E "^Total read pairs processed:|^  Read 1 with adapter:|^  Read 2 with adapter:|^Pairs written \(passing filters\):" "${report}" || true
+    echo
+  } >> "${SUMMARY_TXT}"
+
+    # Parseo robusto (cutadapt 5.x)
+  total=$(awk -F'[[:space:]]+' '/^Total read pairs processed:/ {gsub(",","",$5); print $5}' "${report}")
+  r1adp=$(awk -F'[[:space:]]+' '/^ *Read 1 with adapter:/ {gsub(",","",$5); print $5}' "${report}")
+  r2adp=$(awk -F'[[:space:]]+' '/^ *Read 2 with adapter:/ {gsub(",","",$5); print $5}' "${report}")
+  written=$(awk -F'[[:space:]]+' '/^Pairs written \(passing filters\):/ {gsub(",","",$5); print $5}' "${report}")
+  # Extraer porcentaje con sed (compatible BSD)
+  pct=$(grep -E "^Pairs written \(passing filters\):" "${report}" | sed -E 's/.*\(([^%]+)%\).*/\1/')
+  [[ -z "${pct}" ]] && pct="NA"
+
+  echo -e "${sample}\t${total}\t${r1adp}\t${r2adp}\t${written}\t${pct}" >> "${SUMMARY_TSV}"
+  done
+
+
+echo "[OK] Terminado"
+echo "[OK] FASTQ recortados: ${OUT_DIR}"
+echo "[OK] Resumen TXT: ${SUMMARY_TXT}"
+echo "[OK] Resumen TSV: ${SUMMARY_TSV}"
+# fin del script
+```
+
 primers a utilizar
 ```
 16S V3–V4 (341F / 806R)
