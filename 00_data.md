@@ -701,7 +701,7 @@ REV="${REV:-CTTCCGGTACACTTACCATG}"
 revcomp(){ echo "$1" | tr 'ACGTacgt' 'TGCAtgca' | rev; }
 RC="$(revcomp "${REV}")"
 ADAPTER_R2="${REV}"   # R2 comienza con REV (no RC)
-```
+
 
 # Parámetros (override con THREADS= MIN_LEN= ERROR_RATE= DISCARD_UNTRIMMED=0/1)
 # Permite ajustar el número de hilos, el error permitido, la longitud mínima de las lecturas y si se descartan lecturas sin recortar.
@@ -778,7 +778,6 @@ for R1 in "${R1_LIST[@]}"; do
 
   echo -e "${sample}\t${total}\t${r1adp}\t${r2adp}\t${written}\t${pct}" >> "${SUMMARY_TSV}"
   done
-
 
 echo "[OK] Terminado"
 echo "[OK] FASTQ recortados: ${OUT_DIR}"
