@@ -234,7 +234,7 @@ Descarga los resultados del multiqc en tu PC para poder visualizar con el siguie
 scp alumno@123.456.78.91:/home/alumno/results/03.multiqc_raw/multiqc_report.html .
 ```
 
-Abre el reporte de MiltiQC en el navegador:
+Abre el reporte de MultiQC en el navegador:
 
 ```bash
 open ~/multiqc/multiqc_report.html
@@ -261,7 +261,17 @@ results/
 
 Nota: `Anacapa` realiza control de calidad, recorte de primers/adaptadores y generación de ASVs mediante DADA2. Sin embargo, `FastQC` y `MultiQC` se utilizan previamente para inspeccionar visualmente la calidad de los datos crudos antes de ejecutar el pipeline completo.
 
-### Renoción de primers y limpieza con cut
+### Remoción de primers y limpieza con cutadapt
+
+Los primers son las secuencias que se añaden durante la PCR para amplificar la región de interés, en este caso, el set de primer utilizado es el siguiente:
+```
+Fragmento del gen mitocondrial 12S rRNA V5, 97 pb (Riaz et al., 2011),
+utilizando los cebadores:
+Forward 5′-TAGAACAGGCTCCTCTAG-3′
+Reverse 5′-TTAGATACCCCACTATGC-3′ . 
+```
+
+
 
 Ahora utilizaremos DADA2 a través de QIIME2
 
