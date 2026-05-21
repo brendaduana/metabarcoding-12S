@@ -158,7 +158,7 @@ mkdir -p ~/results/02.fastqc/
 Ahora corremos `FastQC`:
 
 ``` bash
-fastqc ~/data/raw/fastq/*.fastq.gz -o ~/results/2.fastqc/
+fastqc ~/data/raw/fastq/ARCHIVOS_RAW_FASTQ/*.fastq.gz -o ~/results/02.fastqc/
 ```
 
 Al terminar, verifica que los archivos generados esten en el contenido de la carpeta `results/02.fastqc/` con el siguiente comando:
@@ -240,23 +240,29 @@ Abre el reporte de MiltiQC en el navegador:
 open ~/multiqc/multiqc_report.html
 ```
 Tips de revisión en MultiQC:
-- Per base sequence quality: permite observar cómo cambia la calidad de las lecturas a lo largo de la secuenciadefine zonas de truncado (Q≥25–30).
+- `Per base sequence quality`: permite observar cómo cambia la calidad de las lecturas a lo largo de la secuenciadefine zonas de truncado (Q≥25–30).
   
-- Adapter Content u Overrepresented sequences: ayuda a identificar si hay adaptadores, primers u otras secuencias sobrerrepresentadas.
+- `Adapter Content` u `Overrepresented sequences`: ayuda a identificar si hay adaptadores, primers u otras secuencias sobrerrepresentadas.
   
-- Sequence Length Distribution: válida rango del amplicón esperado.
+- `Sequence Length Distribution`: válida rango del amplicón esperado.
 
+Observarás una estructura del directorio de la siguiente forma:
 
 ```text
 results/
 ├── 02.fastqc/
-│   ├── muestra1_R1_fastqc.html
-│   ├── muestra1_R1_fastqc.zip
+│   ├── sample1_R1_fastqc.html
+│   ├── sample1_R1_fastqc.zip
 │   └── ...
 └── 03.multiqc_raw/
     ├── multiqc_data/
     └── multiqc_report.html
 ```
+
+Nota: `Anacapa` realiza control de calidad, recorte de primers/adaptadores y generación de ASVs mediante DADA2. Sin embargo, `FastQC` y `MultiQC` se utilizan previamente para inspeccionar visualmente la calidad de los datos crudos antes de ejecutar el pipeline completo.
+
+### Renoción de primers y limpieza con cut
+
 Ahora utilizaremos DADA2 a través de QIIME2
 
 QIIME2 necesita un manifest `.tsv` en donde se indique:
@@ -522,6 +528,7 @@ REV="${REV:-CTTCCGGTACACTTACCATG}"
 revcomp(){ echo "$1" | tr 'ACGTacgt' 'TGCAtgca' | rev; }
 RC="$(revcomp "${REV}")"
 ADAPTER_R2="${REV}"   # R2 comienza con REV (no RC)
+```
 
 # Parámetros (override con THREADS= MIN_LEN= ERROR_RATE= DISCARD_UNTRIMMED=0/1)
 # Permite ajustar el número de hilos, el error permitido, la longitud mínima de las lecturas y si se descartan lecturas sin recortar.
