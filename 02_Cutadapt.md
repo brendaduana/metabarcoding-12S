@@ -103,6 +103,16 @@ chmod +x ~/scripts/04_cutadapt.sh
 bash ~/scripts/04_cutadapt.sh
 ```
 
+Después de ejecutar `cutadapt`, es recomendable verificar que las secuencias de los primers ya no estén presentes en los archivos recortados, tanto de `forward` como en `reverse`.
+
+```bash
+zgrep -c "TAGAACAGGCTCCTCTAG" ~/data/processed/01.cutadapt/*_R1_trimmed.fastq.gz
+```
+
+```bash
+zgrep -c "TTAGATACCCCACTATGC" ~/data/processed/01.cutadapt/*_R2_trimmed.fastq.gz
+```
+
 Posteriormente, se vuelve a ejecutar `FastQC` y `MultiQC` pero ahora se utilizarán los archivos generados por `Cutadapt`:
 
 Primero se crea un nuevo directorio de salida:
@@ -129,7 +139,7 @@ Se crea un nuevo directorio de salida:
 mkdir -p ~/results/06.multiqc_cutadapt/
 ```
 
-Corre `FastQC`
+Corre `MultiQC`
 
 ```bash
 multiqc ~/results/05.fastqc_cutadapt/ -o ~/results/06.multiqc_cutadapt/
