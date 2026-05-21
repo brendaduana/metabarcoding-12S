@@ -1,4 +1,4 @@
-### Preparación del directorio de trabajo e importacion de datos crudos
+### Preparación del directorio de trabajo e importación de datos crudos
 
 Ingresa al servidor utilizando tu usuario, contraseña e IP:
 
