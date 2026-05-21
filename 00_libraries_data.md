@@ -1,6 +1,6 @@
-### Crea tus carpetas de trabajo
+### Preparación del directorio de trabajo e importacion de datos crudos
 
-Ingresa al servidor con tu usuario y contraseña:
+Ingresa al servidor utilizando tu usuario, contraseña e IP:
 
 ``` bash
 ssh alumno@123.456.78.91
@@ -9,40 +9,37 @@ ssh alumno@123.456.78.91
 Crea tu primer directorio de trabajo:
 
 ``` bash
-mkdir -p data/raw/fastq/
+mkdir -p ~/data/raw/fastq/
 ```
 
 Organización de la estructura:
 
 `data/`: Contiene únicamente datos.
 
-`data/raw/`: Contiene datos crudos, tal como salen del secuenciador.
+`data/raw/`: Contiene datos crudos de secuenciación sin modificar.
 
-`data/raw/fastq/`: Contiene todos los archivos `.fastq` del proyecto.
+`data/raw/fastq/`: Contiene todos los archivos `.fastq.gz` de secuenciación.
 
-### Imporar datos crudos al servidor
+### Impotar datos crudos al servidor
 
 Para importar datos debes tener a la mano:
 
-1. Ruta de tu archivo `.zip` a importar
-2. Usuario y contraseña en el servidor
+1. Ruta local del archivo `.zip` que contiene los FASTQ
+2. Usuario
 3. IP del servidor
+4. Contraseña del servidor
+
 
 Este paso se realiza desde la terminal de tu PC local, *no dentro del servidor*:
 
 ``` bash
-scp "C:/Users/HP/Documentos/LandaLab/1.datoscrudos.zip" alumno@123.456.78.91:/home/alumno/data/raw/fastq/
+scp "C:/Users/HP/Documentos/01.datoscrudos.zip" alumno@123.456.78.91:/home/alumno/data/raw/fastq/
 ```
 
-Posteriormente ingresa al servidor donde trabajarás (Usuario y contraseña):
+Verificar que el archivo fue importado correctamente al servidor
 
 ``` bash
 ssh alumno@123.456.78.91
-```
-
-Verifica que se han importado:
-
-``` bash
 cd ~/data/raw/fastq/
 ls -lh
 ```
@@ -50,48 +47,43 @@ ls -lh
 Se muestra el nombre del archivo `.zip`:
 
 ```text
-1.datoscrudos.zip
+01.datoscrudos.zip
 ```
 
-Descomprime el `.zip`:
+Descomprime el archivos FASTQ `.zip`:
+En este punto se descomprime el `.zip` donde estan contenidos los datos, pero los `.fastq.gz` deben mantenerse comprimidos para el analisis.
 
 ``` bash
-unzip 1.datoscrudos.zip
+unzip 01.datoscrudos.zip
 ```
 
-Deben aparecer lineas como las siguientes: `inflating: HN00264030_ARCHIVOS_RAW_FASTQ/archivo_R1.fastq.gz`
- 
+Deben aparecer lineas como las siguientes: 
+
+`inflating: ARCHIVOS_RAW_FASTQ/archivo_R1.fastq.gz`
+
+`inflating: ARCHIVOS_RAW_FASTQ/archivo_R2.fastq.gz`
+
 Puedes confirmar cuantos FASTQ tienes con el siguiente comando:
 
 ``` bash
-cd HN00264030_ARCHIVOS_RAW_FASTQ
+cd ARCHIVOS_RAW_FASTQ
 ```
+
+Cuenta los archivos correspondientes a las lecturas forward, o R1:
 
 ```bash
 ls *_R1_*.fastq.gz | wc -l
 ```
 
-Esperado: 24
+Esperado: *n*
 
 ```bash
 ls *_R2_*.fastq.gz | wc -l
 ```
 
-Esperado: 24
+Esperado: *n*
 
-Es recomendable utilizar una bitácora dentro de bash utiliza `nano`:
-
-``` bash
-nano bitacora_amplicones_16S.txt
-```
-
-Guarda con `Ctrl + O + Enter` y sales `Ctrl + X`
-
-Para agregar los resultados o notas rápidamente sin abrir el editor utiliza `echo:
-
-``` bash
-echo "escribe el resultado entre comillas" >> bitacora_amplicones_16S.txt
-```
+Si ambos comandos muestran el *n* esperado, significa que se han importado correctamente los archivos pareados.
 
 Hasta este punto tendrás lo siguiente:
 
@@ -99,197 +91,121 @@ Hasta este punto tendrás lo siguiente:
 .
 ├── data
 │   └── raw
-│       ├── 20260114_HN00264030_MAS_Report.zip
 │       ├── fastq
-│       │   ├── CH1S_1.fastq.gz
-│       │   ├── CH1S_2.fastq.gz
-│       │   ├── CH1Y_1.fastq.gz
-│       │   ├── CH1Y_2.fastq.gz
-│       │   ├── CH2S_1.fastq.gz
-│       │   ├── CH2S_2.fastq.gz
-│       │   ├── CH2Y_1.fastq.gz
-│       │   ├── CH2Y_2.fastq.gz
-│       │   ├── CH3S_1.fastq.gz
-│       │   ├── CH3S_2.fastq.gz
-│       │   ├── CH3Y_1.fastq.gz
-│       │   ├── CH3Y_2.fastq.gz
-│       │   ├── KA1S_1.fastq.gz
-│       │   ├── KA1S_2.fastq.gz
-│       │   ├── KA1Y_1.fastq.gz
-│       │   ├── KA1Y_2.fastq.gz
-│       │   ├── KA2S_1.fastq.gz
-│       │   ├── KA2S_2.fastq.gz
-│       │   ├── KA2Y_1.fastq.gz
-│       │   ├── KA2Y_2.fastq.gz
-│       │   ├── KA3S_1.fastq.gz
-│       │   ├── KA3S_2.fastq.gz
-│       │   ├── KA3Y_1.fastq.gz
-│       │   ├── KA3Y_2.fastq.gz
-│       │   ├── SA1S_1.fastq.gz
-│       │   ├── SA1S_2.fastq.gz
-│       │   ├── SA1Y_1.fastq.gz
-│       │   ├── SA1Y_2.fastq.gz
-│       │   ├── SA2S_1.fastq.gz
-│       │   ├── SA2S_2.fastq.gz
-│       │   ├── SA2Y_1.fastq.gz
-│       │   ├── SA2Y_2.fastq.gz
-│       │   ├── SA3S_1.fastq.gz
-│       │   ├── SA3S_2.fastq.gz
-│       │   ├── SA3Y_1.fastq.gz
-│       │   ├── SA3Y_2.fastq.gz
-│       │   ├── XP1S_1.fastq.gz
-│       │   ├── XP1S_2.fastq.gz
-│       │   ├── XP1Y_1.fastq.gz
-│       │   ├── XP1Y_2.fastq.gz
-│       │   ├── XP2S_1.fastq.gz
-│       │   ├── XP2S_2.fastq.gz
-│       │   ├── XP2Y_1.fastq.gz
-│       │   ├── XP2Y_2.fastq.gz
-│       │   ├── XP3S_1.fastq.gz
-│       │   ├── XP3S_2.fastq.gz
-│       │   ├── XP3Y_1.fastq.gz
-│       │   └── XP3Y_2.fastq.gz
-│       └── HN00264030_ARCHIVOS_RAW_FASTQ.zip
-└── bitacora_amplicones_16S.txt
+│       │   ├── sample1_1.fastq.gz
+│       │   ├── sample1_2.fastq.gz
+│       │   ├── sample2_1.fastq.gz
+│       │   ├── sample2_2.fastq.gz
+│       │   ├── sample3_1.fastq.gz
+│       │   ├── sample3_2.fastq.gz
+│       └── ARCHIVOS_RAW_FASTQ.zip
+
+```
+
+Se puede hacer un control incial de lecturas por archivo FASTQ
+Este paso permite revisar si todas las muestras tienen una cantidad similar o igual de lecturas entre muestras.
+
+``` bash
+cd ~/data/raw/fastq/ARCHIVOS_RAW_FASTQ
+```
+
+Crea un directorio de salida
+
+``` bash
+mkdir ~/results/01.read_counts/
+```
+
+Y ejecuta el siguiente comando
+
+``` bash
+for f in *.fastq.gz
+do
+    n_lines=$(gzip -cd "$f" | wc -l)
+    n_reads=$((n_lines / 4))
+    printf "%s\t%s\n" "$f" "$n_reads"
+done > ~/results/01.read_counts/conteo_lecturas_raw.tsv
+```
+
+Ejemplo de resultado obtenido en `conteo_lecturas_raw.tsv`:
+
+```text
+sample1_R1_001.fastq	323473
+sample1_R2_001.fastq	323473
+sample2_R1_001.fastq	228163
+sample2_R2_001.fastq	228163
+sample3_R1_001.fastq	207120
+sample3_R2_001.fastq	207120
 ```
 
 Lo que se ha realizado:
 
-1. Acceso correcto al servidor LandaLab.
-2. Creación de directorios de trabajo en el servidor.
+1. Acceso correcto al servidor.
+2. Creación de directorios inicales de trabajo.
 3. Carga del archivo original de secuenciación `.zip` desde la PC al servidor.
-4. Identificación de lecturas paired-end en el archivo ZIP.
-5. Creación de una bitácora en formato `.txt`.
+4. Verificación del número de archivos FASTQ paired-end es correcto.
+5. Conteo inicial de lecturas
 
 ### Reporte de Control de Calidad (QC)
 
-Posteriormente, se hará un reporte de control de calidad con `FastQC`, en formato HTML que dice que "tan buena" es la calidad de la lectura en cada posición de la secuencia.
+Posteriormente, se hará un reporte de control de calidad con `FastQC`, en formato `.html`, que permite revisar la calidad de las lecturas en cada posicion de la secuencia por muestra.
 
-1. Para eso primero haremos un directorio de resultados que se llame `results/2.fastqc/`:
+Para eso, primero se crea un directorio de resultados que se llame `results/02.fastqc/`:
 
 ``` bash
-mkdir  ~/results/2.fastqc/
+mkdir -p ~/results/02.fastqc/
 ```
 
-2. Ahora corremos `FastQC`:
+Ahora corremos `FastQC`:
 
 ``` bash
 fastqc ~/data/raw/fastq/*.fastq.gz -o ~/results/2.fastqc/
 ```
 
-3. Al terminar, verifica los siguiente archivos en la carpeta `results/2.fastqc/`:
+Al terminar, verifica que los archivos generados esten en el contenido de la carpeta `results/02.fastqc/` con el siguiente comando:
 
 ```
-├── results
-   └── 2.fastqc
-       ├── CH1S_1_fastqc.html
-       ├── CH1S_1_fastqc.zip
-       ├── CH1S_2_fastqc.html
-       ├── CH1S_2_fastqc.zip
-       ├── CH1Y_1_fastqc.html
-       ├── CH1Y_1_fastqc.zip
-       ├── CH1Y_2_fastqc.html
-       ├── CH1Y_2_fastqc.zip
-       ├── CH2S_1_fastqc.html
-       ├── CH2S_1_fastqc.zip
-       ├── CH2S_2_fastqc.html
-       ├── CH2S_2_fastqc.zip
-       ├── CH2Y_1_fastqc.html
-       ├── CH2Y_1_fastqc.zip
-       ├── CH2Y_2_fastqc.html
-       ├── CH2Y_2_fastqc.zip
-       ├── CH3S_1_fastqc.html
-       ├── CH3S_1_fastqc.zip
-       ├── CH3S_2_fastqc.html
-       ├── CH3S_2_fastqc.zip
-       ├── CH3Y_1_fastqc.html
-       ├── CH3Y_1_fastqc.zip
-       ├── CH3Y_2_fastqc.html
-       ├── CH3Y_2_fastqc.zip
-       ├── KA1S_1_fastqc.html
-       ├── KA1S_1_fastqc.zip
-       ├── KA1S_2_fastqc.html
-       ├── KA1S_2_fastqc.zip
-       ├── KA1Y_1_fastqc.html
-       ├── KA1Y_1_fastqc.zip
-       ├── KA1Y_2_fastqc.html
-       ├── KA1Y_2_fastqc.zip
-       ├── KA2S_1_fastqc.html
-       ├── KA2S_1_fastqc.zip
-       ├── KA2S_2_fastqc.html
-       ├── KA2S_2_fastqc.zip
-       ├── KA2Y_1_fastqc.html
-       ├── KA2Y_1_fastqc.zip
-       ├── KA2Y_2_fastqc.html
-       ├── KA2Y_2_fastqc.zip
-       ├── KA3S_1_fastqc.html
-       ├── KA3S_1_fastqc.zip
-       ├── KA3S_2_fastqc.html
-       ├── KA3S_2_fastqc.zip
-       ├── KA3Y_1_fastqc.html
-       ├── KA3Y_1_fastqc.zip
-       ├── KA3Y_2_fastqc.html
-       ├── KA3Y_2_fastqc.zip
-       ├── SA1S_1_fastqc.html
-       ├── SA1S_1_fastqc.zip
-       ├── SA1S_2_fastqc.html
-       ├── SA1S_2_fastqc.zip
-       ├── SA1Y_1_fastqc.html
-       ├── SA1Y_1_fastqc.zip
-       ├── SA1Y_2_fastqc.html
-       ├── SA1Y_2_fastqc.zip
-       ├── SA2S_1_fastqc.html
-       ├── SA2S_1_fastqc.zip
-       ├── SA2S_2_fastqc.html
-       ├── SA2S_2_fastqc.zip
-       ├── SA2Y_1_fastqc.html
-       ├── SA2Y_1_fastqc.zip
-       ├── SA2Y_2_fastqc.html
-       ├── SA2Y_2_fastqc.zip
-       ├── SA3S_1_fastqc.html
-       ├── SA3S_1_fastqc.zip
-       ├── SA3S_2_fastqc.html
-       ├── SA3S_2_fastqc.zip
-       ├── SA3Y_1_fastqc.html
-       ├── SA3Y_1_fastqc.zip
-       ├── SA3Y_2_fastqc.html
-       ├── SA3Y_2_fastqc.zip
-       ├── XP1S_1_fastqc.html
-       ├── XP1S_1_fastqc.zip
-       ├── XP1S_2_fastqc.html
-       ├── XP1S_2_fastqc.zip
-       ├── XP1Y_1_fastqc.html
-       ├── XP1Y_1_fastqc.zip
-       ├── XP1Y_2_fastqc.html
-       ├── XP1Y_2_fastqc.zip
-       ├── XP2S_1_fastqc.html
-       ├── XP2S_1_fastqc.zip
-       ├── XP2S_2_fastqc.html
-       ├── XP2S_2_fastqc.zip
-       ├── XP2Y_1_fastqc.html
-       ├── XP2Y_1_fastqc.zip
-       ├── XP2Y_2_fastqc.html
-       ├── XP2Y_2_fastqc.zip
-       ├── XP3S_1_fastqc.html
-       ├── XP3S_1_fastqc.zip
-       ├── XP3S_2_fastqc.html
-       ├── XP3S_2_fastqc.zip
-       ├── XP3Y_1_fastqc.html
-       ├── XP3Y_1_fastqc.zip
-       ├── XP3Y_2_fastqc.html
-       └── XP3Y_2_fastqc.zip
+ls -lh ~/results/02.fastqc/
 ```
 
-Al verificar que esten todos los `.html` y `.zip` ahora puedes correr un `multiqc`:
+Por cada archivo `.fastq.gz`, FastQC genera dos archivos:
+
+```
+archivo_fastqc.html
+archivo_fastqc.zip
+```
+
+La estructura del proyecto comenzara a ver asi:
+
+```
+.
+├── data
+│   └── raw
+│       └── fastq
+│           └── ARCHIVOS_RAW_FASTQ
+│               ├── sample1_R1.fastq.gz
+│               ├── sample1_R2.fastq.gz
+│               └── ...
+└── results
+    └── 02.fastqc
+        ├── sample1_R1_fastqc.html
+        ├── sample1_R1_fastqc.zip
+        ├── sample2_R2_fastqc.html
+        ├── sample2_R2_fastqc.zip
+        └── ...
+```
+
+Al verificar que esten todos los `.html` y `.zip` ahora puedes correr un [MultiQC](https://docs.seqera.io/multiqc). Su función es reunir todos los reportes individuales generados por `FastQC` y crear un solo reporte general en formato `.html`. 
+
+Crea un directorio de salida:
 
 ``` bash
-cd ~/results/2.fastqc
+mkdir -p ~/results/03.multiqc_raw/
 ```
 
-Pero, ¿Qué es un [multiqc](https://docs.seqera.io/multiqc)?
+Ejecuta MultiQC indicando como entrada el directorio donde están los resultados de FastQC:
 
 ``` bash
-multiqc .
+multiqc ~/results/02.fastqc/ -o ~/results/03.multiqc_raw/
 ```
 
 Te dará como resultado:
@@ -298,9 +214,9 @@ Te dará como resultado:
 /// MultiQC 🔍 v1.31
 
      version_check | MultiQC Version v1.33 now available!
-       file_search | Search path: /home/alumno/results/2.fastqc
-         searching | ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 100% 96/96
-            fastqc | Found 48 reports
+       file_search | Search path: /home/alumno/results/03.multiqc_raw
+         searching | ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 100% n/n
+            fastqc | Found n reports
      write_results | Data        : multiqc_data
      write_results | Report      : multiqc_report.html
            multiqc | MultiQC complete
@@ -309,13 +225,37 @@ Te dará como resultado:
 Verifica que estén los archivos `multiqc_data` y `multiqc_report.html` correctamente:
 
 ```bash
- ls | grep multiqc
+ls ~/results/03.multiqc_raw/ | grep multiqc
 ```
 
-Posteriormente descarga los resultados del multiqc en tu PC para poder visualizar con el siguiente comando desde tu power shell:
+Descarga los resultados del multiqc en tu PC para poder visualizar con el siguiente comando desde tu power shell o desde la terminal:
 
 ```bash
-scp alumno@123.456.78.91:/home/alumno/results/2.fastqc/multiqc_report.html .
+scp alumno@123.456.78.91:/home/alumno/results/03.multiqc_raw/multiqc_report.html .
+```
+
+Abre el reporte de MiltiQC en el navegador:
+
+```bash
+open ~/multiqc/multiqc_report.html
+```
+Tips de revisión en MultiQC:
+- Per base sequence quality: permite observar cómo cambia la calidad de las lecturas a lo largo de la secuenciadefine zonas de truncado (Q≥25–30).
+  
+- Adapter Content u Overrepresented sequences: ayuda a identificar si hay adaptadores, primers u otras secuencias sobrerrepresentadas.
+  
+- Sequence Length Distribution: válida rango del amplicón esperado.
+
+
+```text
+results/
+├── 02.fastqc/
+│   ├── muestra1_R1_fastqc.html
+│   ├── muestra1_R1_fastqc.zip
+│   └── ...
+└── 03.multiqc_raw/
+    ├── multiqc_data/
+    └── multiqc_report.html
 ```
 Ahora utilizaremos DADA2 a través de QIIME2
 
