@@ -225,8 +225,3 @@ errR <- learnErrors(filtRs, multithread=TRUE)
 ### Eliminar quimeras: removeBimeraDenovo()
 
 https://zenodo.org/records/14169026
-
-###datitos extra de diccionario
-```
-set - e: si ocurre cualquier error, el script se detiene inmediatamente
-set -u:si usas una variable que no existe, el script falla
