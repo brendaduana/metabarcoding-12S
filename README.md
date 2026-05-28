@@ -8,7 +8,7 @@ Incluye un paquete de R (ranacapa) para conocer las diferencias de biodiversidad
 
 Las lecturas de DNA ambiental se deben comparar con secuencias de referencias para las  asignaciones taxonómicas
 
-Incluye una herramienta CRUX para crear bases de datos de referencia personalizadas para el barcode elegido.
+Incluye una herramienta rCRUX para crear bases de datos de referencia personalizadas para el barcode elegido.
 
 Anacapa procesa lecturas de una plataforma Miseq
 
