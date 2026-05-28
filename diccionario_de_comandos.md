@@ -1,4 +1,5 @@
 ### Comandos
+
 Esta lista está pensada para llevar un listado de los comandos que se ponen en práctica en este flujo de trabajo.
 
 El siguiente sitio [powershell](https://explainshell.com/) arroja una explicación rápida de cada parte de un comando. ¡Pruebalo con el siguiente!:
@@ -7,7 +8,7 @@ El siguiente sitio [powershell](https://explainshell.com/) arroja una explicaci�
 grep -i "pattern" file.txt
 ```
 
-Que comandos aprendimos:
+Comandos:
 
 `scp` (secure copy): copia archivos de forma encriptada.
 
@@ -22,4 +23,9 @@ Que comandos aprendimos:
 `~` (Home Directory): es un atajo para la ruta de tu usuario principal (ejemplo:*/home/alumno/*)
 
 `mkdir` (make directory): funciona para crear directorios y con el parámetro `-p` (parents) se crea directorios intermedios si no existen.
+
+`set - e`: si ocurre cualquier error, el script se detiene inmediatamente
+
+`set -u`: si usas una variable que no existe, el script falla
+
 
